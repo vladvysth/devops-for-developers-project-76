@@ -1,0 +1,48 @@
+- name: Setup webservers
+  hosts: all
+  become: true
+  tags: [setup]
+
+  vars:
+    pip_install_packages:
+      - name: docker
+
+  roles:
+    - geerlingguy.pip
+    - geerlingguy.docker
+
+- name: Deploy Redmine application
+  hosts: all
+  become: true
+  tags: [deploy]
+
+  tasks:
+    - name: Create .env file from template
+      template:
+        src: templates/redmine.env.j2
+        dest: /root/redmine.env
+        mode: '0600'
+
+    - name: Allow Redmine traffic through firewall
+      ufw:
+        rule: allow
+        port: "{{ redmine_port }}"
+        proto: tcp
+
+    - name: Run Redmine container
+      docker_container:
+        name: redmine
+        image: redmine:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ redmine_port }}:3000"
+        env_file: /root/redmine.env
+
+- name: Setup monitoring
+  hosts: webservers
+  become: true
+  tags: [monitoring]
+
+  roles:
+    - role: datadog.dd.agent
