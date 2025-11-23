@@ -1,3 +1,13 @@
+# Docker config
+install_docker: false
+
 # App config
 redmine_port: 3000
 domain: "vvysokiy.site"
+
+# DB config
+db_host: "db-postgresql-sgp1-93083-do-user-8866883-0.m.db.ondigitalocean.com"
+db_port: 25060
+db_name: "defaultdb"
+db_user: "doadmin"
+db_password: "{{ vault_db_password }}"
